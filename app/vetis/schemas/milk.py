@@ -10,6 +10,8 @@ from pydantic_core.core_schema import ValidationInfo
 
 from app.schemas.milk_service import TransactionType, VetExamination, MilkConfigSchema
 from app.settings import settings
+from app.vetis.schemas.base import RequestSchema, RecipientInRequestSchema, ProductInRequestSchema, \
+    TransactionAfterRequestSchema
 from app.vetis.utils import date_str_to_datetime
 
 _init_context_var = ContextVar('_init_context_var', default=None)
@@ -29,7 +31,7 @@ class ValueWithIsValid(BaseModel):
     is_valid: bool
 
 
-class MilkProductInRequestSchema(BaseModel):
+class MilkProductInRequestSchema(ProductInRequestSchema):
     def __init__(__pydantic_self__, **data: Any) -> None:
         __pydantic_self__.__pydantic_validator__.validate_python(
             data,
@@ -92,7 +94,7 @@ class MilkProductInRequestSchema(BaseModel):
         return float(value)
 
 
-class MilkRecipientInRequestSchema(BaseModel):
+class MilkRecipientInRequestSchema(RecipientInRequestSchema):
     recipient_enterprise: str
     recipient_company: str
     bill_of_lading: str
@@ -111,7 +113,7 @@ class MilkRecipientInRequestSchema(BaseModel):
         return ValueWithIsValid(value=bill_of_lading_date, is_valid=False)
 
 
-class MilkRequestSchema(BaseModel):
+class MilkRequestSchema(RequestSchema):
     def __init__(__pydantic_self__, **data: Any) -> None:
         __pydantic_self__.__pydantic_validator__.validate_python(
             data,
@@ -158,10 +160,3 @@ class MilkRequestSchema(BaseModel):
                 return ValueWithIsValid(value=value, is_valid=True)
         else:
             return ValueWithIsValid(value=value, is_valid=True)
-
-
-class MilkTransactionAfterRequestSchema(BaseModel):
-    number: str
-    version: str
-    tuid: str
-    waybill_id: str

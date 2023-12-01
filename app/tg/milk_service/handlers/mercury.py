@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from aiogram import Router, F, Bot
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery
@@ -8,7 +6,7 @@ from loguru import logger
 from app.databases.mongo import Database
 from app.schemas.milk_service import MilkConfigSchema
 from app.schemas.user import UserSchema
-from app.settings import saved_msg, checked_invalid_requests
+from app.settings import saved_msg
 from app.tg.milk_service.callback import MilkMainCallback
 from app.tg.milk_service.keyboard import main_kb
 from app.tg.milk_service.utils import get_observer_answer

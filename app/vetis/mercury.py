@@ -9,8 +9,7 @@ from yarl import URL
 from app.databases.mongo import Database
 from app.settings import settings
 from app.vetis.base_session import BaseSession
-from app.vetis.schemas.base import EnterpriseMainPageSchema
-from app.vetis.schemas.milk import MilkRequestSchema, MilkTransactionAfterRequestSchema
+from app.vetis.schemas.base import EnterpriseMainPageSchema, RequestSchema, TransactionAfterRequestSchema
 
 
 class Mercury(BaseSession):
@@ -211,7 +210,7 @@ class Mercury(BaseSession):
         parsed_doc.update({"text": get_text_by_title(bs_doc=doc_params, title='Особые отметки:')})
         return parsed_doc
 
-    async def accept_request(self, request: MilkRequestSchema) -> MilkTransactionAfterRequestSchema:
+    async def accept_request(self, request: RequestSchema) -> TransactionAfterRequestSchema:
         response = await self.fetch(
             url=self.request_url,
             data={'_action': 'transactionAcceptForm',
@@ -222,14 +221,14 @@ class Mercury(BaseSession):
         )
         request.accepted = True
         accepted_request_page = BSoup(await response.text(), "html5lib")
-        return MilkTransactionAfterRequestSchema(
+        return TransactionAfterRequestSchema(
             number=accepted_request_page.find("input", {"name": "transactionPk"}).get("value"),
             version=accepted_request_page.find("input", {"id": "transaction-version"}).get("value"),
             tuid=accepted_request_page.find("input", {"name": "tuid"}).get("value"),
             waybill_id=accepted_request_page.find("input", {"name": "waybillId"}).get("value"),
         )
 
-    async def confirm_transaction(self, transaction: MilkTransactionAfterRequestSchema) -> bool:
+    async def confirm_transaction(self, transaction: TransactionAfterRequestSchema) -> bool:
         response = await self.fetch(
             url=self.request_url,
             data={

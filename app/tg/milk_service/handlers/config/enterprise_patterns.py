@@ -52,19 +52,27 @@ async def add_enterprise_pattern_handler(callback: CallbackQuery, state: FSMCont
 
 @router.message(EditEnterprisePatternsState.get_value)
 async def get_new_enterprise_pattern_handler(message: Message, db: Database, bot: Bot):
-    config = await db.milk_service_config.push(
-        field="enterprise_patterns",
-        data=MilkPushSchema(
-            user_id=message.from_user.id,
-            items=[message.text]
-        )
-    )
     try:
-        await bot.edit_message_text(
-            chat_id=saved_msg[message.from_user.id]['chat_id'],
-            message_id=saved_msg[message.from_user.id]['msg_id'],
-            text=get_config_answer(config),
-            reply_markup=edit_enterprise_patterns_kb(enterprises=config.enterprise_patterns)
+        MilkEditEnterprisePatternsCallback(action="delete", value=message.text).pack()
+    except ValueError:
+        await message.answer(
+            text=f"Шаблон названия площадки слишком длинный. Максимум 52 символа (кириллица занимает 2 символа)",
         )
-    except TelegramBadRequest:
-        pass
+        return
+    else:
+        config = await db.milk_service_config.push(
+            field="enterprise_patterns",
+            data=MilkPushSchema(
+                user_id=message.from_user.id,
+                items=[message.text]
+            )
+        )
+        try:
+            await bot.edit_message_text(
+                chat_id=saved_msg[message.from_user.id]['chat_id'],
+                message_id=saved_msg[message.from_user.id]['msg_id'],
+                text=get_config_answer(config),
+                reply_markup=edit_enterprise_patterns_kb(enterprises=config.enterprise_patterns)
+            )
+        except TelegramBadRequest:
+            pass

@@ -44,3 +44,10 @@ class RequestSchema(BaseModel):
     transaction_type: TransactionType
     auto_number: str
     recipients: list[RecipientInRequestSchema]
+
+
+class TransactionAfterRequestSchema(BaseModel):
+    number: str
+    version: str
+    tuid: str
+    waybill_id: str
