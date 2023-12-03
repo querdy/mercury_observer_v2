@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from app.schemas.milk_service import MilkConfigSchema, DayOfWeek
-from app.settings import checked_invalid_requests, settings
+from app.settings import settings
 from app.vetis.schemas.base import EnterpriseMainPageSchema
 from app.vetis.schemas.milk import MilkRequestSchema, ValueWithIsValid, DateWithIsValid
 
