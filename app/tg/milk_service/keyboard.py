@@ -1,9 +1,10 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-from app.schemas.milk_service import ScheduleEveryMinute, TransactionType, VetExamination
+from app.schemas.milk_service import ScheduleEveryMinute, TransactionType, VetExamination, DayOfWeek
 from app.tg.milk_service.callback import MilkMainCallback, MilkEditScheduleEveryMinuteCallback, \
     MilkEditVerifiedTransactionTypeCallback, MilkEditEnterprisePatternsCallback, MilkEditVerifiedProductsCallback, \
-    MilkEditConfigCallback, EditMercuryAuthDataCallback, MilkEditVerifiedVetExaminationCallback
+    MilkEditConfigCallback, EditMercuryAuthDataCallback, MilkEditVerifiedVetExaminationCallback, \
+    MilkEditDaysOfWeekCallback
 
 
 def edit_schedule_every_minute_kb():
@@ -70,6 +71,36 @@ def edit_verified_transaction_type_kb(transaction_types: list[str]):
                     text=f"Добавить: {transaction_type.value}",
                     callback_data=MilkEditVerifiedTransactionTypeCallback(
                         action="add", value=str(transaction_type.value)
+                    ).pack()
+                )]
+            )
+    buttons.append([
+        InlineKeyboardButton(
+            text=f"Назад",
+            callback_data=MilkMainCallback(action='edit').pack()
+        )
+    ])
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def edit_days_of_week_kb(days_of_week: list[int]):
+    buttons = []
+    for day in DayOfWeek:
+        if day.value in days_of_week:
+            buttons.append(
+                [InlineKeyboardButton(
+                    text=f"Удалить: {day.name}",
+                    callback_data=MilkEditDaysOfWeekCallback(
+                        action="delete", value=str(day.value)
+                    ).pack()
+                )]
+            )
+        else:
+            buttons.append(
+                [InlineKeyboardButton(
+                    text=f"Добавить: {day.name}",
+                    callback_data=MilkEditDaysOfWeekCallback(
+                        action="add", value=str(day.value)
                     ).pack()
                 )]
             )
@@ -168,6 +199,12 @@ def edit_config_kb():
             InlineKeyboardButton(
                 text=f"Временной интервал проверки",
                 callback_data=MilkEditConfigCallback(action='interval').pack()
+            ),
+        ],
+        [
+            InlineKeyboardButton(
+                text=f"Дни недели для проверки",
+                callback_data=MilkEditConfigCallback(action='days_of_week').pack()
             ),
         ],
         [

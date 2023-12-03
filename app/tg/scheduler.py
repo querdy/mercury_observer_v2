@@ -19,19 +19,25 @@ class SchedulerRepo:
 
     def create_job(self, function: Callable, params: dict, user_id: int,
                    every_minute: int, hour_start: int, hour_end: int,
-                   minute_start: int, minute_end: int) -> None:
-        self.scheduler.add_job(
-            function,
-            kwargs=params,
-            trigger=CronTrigger(
-                hour=f"{hour_start}-{hour_end}" if hour_start < hour_end else f"{hour_start}-23, 0-{hour_end}",
-                minute=f"{minute_start}-{minute_end}/{every_minute}",
-                # second=f"*/{every_minute}",
-                # day_of_week=,
-            ),
-            name=str(user_id)
-        )
-        logger.info(f"{user_id} create job. func: {function.__name__}, params: {params}")
+                   minute_start: int, minute_end: int, days_of_week: list[int]) -> bool:
+        try:
+            self.scheduler.add_job(
+                function,
+                kwargs=params,
+                trigger=CronTrigger(
+                    hour=f"{hour_start}-{hour_end}" if hour_start < hour_end else f"{hour_start}-23, 0-{hour_end}",
+                    # minute=f"{minute_start}-{minute_end}/{every_minute}",
+                    minute=f"{minute_start}-{minute_end}",
+                    second=f"*/{every_minute}",
+                    day_of_week=','.join(str(day) for day in days_of_week),
+                ),
+                name=str(user_id)
+            )
+            logger.info(f"{user_id} create job. func: {function.__name__}, params: {params}")
+            return True
+        except ValueError:
+            logger.warning(f"{user_id} NOT create job. Params: {params}")
+            return False
 
     def remove_user_jobs(self, user_id: int):
         [job.remove() for job in self.get_user_jobs(user_id=user_id)]

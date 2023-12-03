@@ -1,4 +1,4 @@
-from app.schemas.milk_service import MilkConfigSchema
+from app.schemas.milk_service import MilkConfigSchema, DayOfWeek
 from app.settings import checked_invalid_requests, settings
 from app.vetis.schemas.base import EnterpriseMainPageSchema
 from app.vetis.schemas.milk import MilkRequestSchema, ValueWithIsValid
@@ -15,7 +15,8 @@ def get_config_answer(config: MilkConfigSchema) -> str:
         f"Допустимые статусы ВСЭ: <b>{', '.join(config.verified_vet_examinations)}</b>\n"
         f"Проверять формат номера транспорта: <b>{'Да' if config.check_transport_number_format else 'Нет'}</b>\n"
         f"Интервал проверки: <b>{str(config.start_hour).rjust(2, '0')}:{str(config.start_minute).rjust(2, '0')}"
-        f" - {str(config.end_hour).rjust(2, '0')}:{str(config.end_minute).rjust(2, '0')}</b>\n"
+        f" - {str(config.end_hour).rjust(2, '0')}:{str(config.end_minute).rjust(2, '0')}</b>"
+        f" ({', '.join([DayOfWeek(day).get_ru_value() for day in config.days_of_week])})\n"
     )
     return answer
 

@@ -33,6 +33,11 @@ class MilkEditVerifiedTransactionTypeCallback(CallbackData, prefix="mevtt"):
     value: str
 
 
+class MilkEditDaysOfWeekCallback(CallbackData, prefix="medow"):
+    action: str
+    value: str
+
+
 class MilkEditVerifiedVetExaminationCallback(CallbackData, prefix="mevve"):
     action: str
     value: str

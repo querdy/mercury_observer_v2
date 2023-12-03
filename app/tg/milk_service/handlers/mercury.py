@@ -54,18 +54,21 @@ async def start_single_parse_handler(callback: CallbackQuery, db: Database):
 async def start_loop_parse_handler(callback: CallbackQuery, db: Database, scheduler: SchedulerRepo, bot: Bot):
     user = await db.user.get_by_user_id(callback.from_user.id)
     config = await db.milk_service_config.get_by_user_id(callback.from_user.id)
-    scheduler.create_job(run_observer, {'db': db, 'callback': callback, 'user': user, 'config': config},
-                         every_minute=config.schedule_every_minute, user_id=callback.from_user.id,
-                         hour_start=config.start_hour, hour_end=config.end_hour, minute_start=config.start_minute,
-                         minute_end=config.end_minute)
-    try:
-        await bot.edit_message_reply_markup(
-            chat_id=saved_msg[callback.from_user.id]['chat_id'],
-            message_id=saved_msg[callback.from_user.id]['msg_id'],
-            reply_markup=main_kb(is_schedule=bool(scheduler.get_user_jobs(callback.from_user.id)))
-        )
-    except TelegramBadRequest:
-        pass
+    if scheduler.create_job(run_observer, {'db': db, 'callback': callback, 'user': user, 'config': config},
+                            every_minute=config.schedule_every_minute, user_id=callback.from_user.id,
+                            hour_start=config.start_hour, hour_end=config.end_hour, minute_start=config.start_minute,
+                            minute_end=config.end_minute, days_of_week=config.days_of_week):
+        try:
+            await bot.edit_message_reply_markup(
+                chat_id=saved_msg[callback.from_user.id]['chat_id'],
+                message_id=saved_msg[callback.from_user.id]['msg_id'],
+                reply_markup=main_kb(is_schedule=bool(scheduler.get_user_jobs(callback.from_user.id)))
+            )
+        except TelegramBadRequest:
+            pass
+    else:
+        await callback.message.answer(f"Не удалось запустить периодическую проверку!")
+        await callback.answer()
 
 
 @router.callback_query(MilkMainCallback.filter(F.action == 'stop_loop'))
@@ -79,4 +82,3 @@ async def stop_loop_parse_handler(callback: CallbackQuery, scheduler: SchedulerR
         )
     except TelegramBadRequest:
         pass
-

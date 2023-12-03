@@ -15,5 +15,6 @@ milk_service_router.include_router(config.verified_products.router)
 milk_service_router.include_router(config.verified_transaction_type.router)
 milk_service_router.include_router(config.check_transport_number_format.router)
 milk_service_router.include_router(config.verified_vet_examinations.router)
+milk_service_router.include_router(config.days_of_week.router)
 
 milk_service_router.include_router(mercury.router)
