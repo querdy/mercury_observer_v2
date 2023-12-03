@@ -26,9 +26,9 @@ class SchedulerRepo:
                 kwargs=params,
                 trigger=CronTrigger(
                     hour=f"{hour_start}-{hour_end}" if hour_start < hour_end else f"{hour_start}-23, 0-{hour_end}",
-                    # minute=f"{minute_start}-{minute_end}/{every_minute}",
-                    minute=f"{minute_start}-{minute_end}",
-                    second=f"*/{every_minute}",
+                    minute=f"{minute_start}-{minute_end}/{every_minute}",
+                    # minute=f"{minute_start}-{minute_end}",
+                    # second=f"*/{every_minute}",
                     day_of_week=','.join(str(day) for day in days_of_week),
                 ),
                 name=str(user_id)
