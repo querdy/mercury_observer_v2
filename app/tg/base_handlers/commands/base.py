@@ -14,4 +14,4 @@ router = Router()
 async def command_start_handler(message: Message, state: FSMContext, user: UserSchema) -> None:
     await state.clear()
     logger.info(f"user {user.username} {user.user_id} {user.fullname} push /start")
-    await message.answer(f"Hi <b>{user.username}</b>!", reply_markup=ReplyKeyboard.main())
+    await message.answer(f"Hi <b>{user.username}</b>! Смотри список команд")

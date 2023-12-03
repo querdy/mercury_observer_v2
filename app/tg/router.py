@@ -19,14 +19,12 @@ async def cancel_handler(message: Message, state: FSMContext):
     if current_state is None:
         return
     await state.clear()
-    # await message.reply("Ок~", reply_markup=Keyboard.get_main_keyboard())
 
 
 @base_router.callback_query(lambda callback: callback.data == 'cancel')
 async def cancel_callback_handler(callback: CallbackQuery, state: FSMContext):
     current_state = await state.get_state()
     await callback.message.edit_reply_markup(reply_markup=None)
-    # await callback.message.delete()
     if current_state is None:
         return
     await state.clear()

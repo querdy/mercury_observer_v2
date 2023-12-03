@@ -23,7 +23,9 @@ def get_config_answer(config: MilkConfigSchema) -> str:
     return answer
 
 
-def get_observer_answer(enterprise: EnterpriseMainPageSchema, requests: list[MilkRequestSchema]) -> list[str]:
+def get_observer_answer(
+        enterprise: EnterpriseMainPageSchema,
+        requests: list[MilkRequestSchema]) -> list[str]:
     def is_valid_symbol(field: ValueWithIsValid) -> str:
         return '🍚' if field.is_valid else '❌'
 
@@ -39,8 +41,8 @@ def get_observer_answer(enterprise: EnterpriseMainPageSchema, requests: list[Mil
     counter = 0
     answer = [[f"{enterprise.name} \n<b>- количество активных заявок: {len(requests)}</b>;\n"]]
     for request in requests:
-        if request.number in checked_invalid_requests:
-            continue
+        # if request.number in checked_invalid_requests:
+        #     continue
         text = [
             f"\n<b>Заявка {requests.index(request) + 1}:</b>\n",
             f"Принято: <b>{request.accepted}</b> -> Оформлено: <b>{request.confirmed}</b>\n"
@@ -72,8 +74,8 @@ def get_observer_answer(enterprise: EnterpriseMainPageSchema, requests: list[Mil
                     counter += 1
                     answer.append([])
                 answer[counter].extend(text)
-        if not request.is_valid():
-            checked_invalid_requests.add(request.number)
+        # if not request.is_valid():
+        #     checked_invalid_requests.add(request.number)
     for msg_index in range(len(answer)):
         answer[msg_index] = ''.join(answer[msg_index])
     return answer
