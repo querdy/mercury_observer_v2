@@ -31,6 +31,12 @@ class ValueWithIsValid(BaseModel):
     is_valid: bool
 
 
+class DateWithIsValid(BaseModel):
+    date_start: datetime | str | None
+    date_end: datetime | None
+    is_valid: bool
+
+
 class MilkProductInRequestSchema(ProductInRequestSchema):
     def __init__(__pydantic_self__, **data: Any) -> None:
         __pydantic_self__.__pydantic_validator__.validate_python(
@@ -42,8 +48,8 @@ class MilkProductInRequestSchema(ProductInRequestSchema):
     product_name: ValueWithIsValid
     volume: float
     unit: str
-    date_from: ValueWithIsValid
-    date_to: datetime | None
+    date_from: DateWithIsValid
+    date_to: DateWithIsValid
     purpose: ValueWithIsValid
     vet_examination: ValueWithIsValid
     text: str
@@ -52,19 +58,52 @@ class MilkProductInRequestSchema(ProductInRequestSchema):
     @property
     def expiration(self) -> ValueWithIsValid:
         try:
-            expire = self.date_to - self.date_from.value
+            expire_1 = self.date_to.date_start - self.date_from.date_start
         except TypeError:
-            expire = None
-        if expire in settings.MILK_VALID_EXPIRATION or expire is None:
-            return ValueWithIsValid(value=expire, is_valid=True)
-        return ValueWithIsValid(value=expire, is_valid=False)
+            expire_1 = None
+        try:
+            expire_2 = self.date_to.date_end - self.date_from.date_end
+        except TypeError:
+            expire_2 = None
+        if expire_2 is None or expire_1 == expire_2:
+            return ValueWithIsValid(
+                value=expire_1,
+                is_valid=expire_1 in settings.MILK_VALID_EXPIRATION or expire_1 is None
+            )
+        return ValueWithIsValid(value=(expire_1, expire_2), is_valid=False)
 
     @field_validator('date_from', mode='before')
-    def v_date_from(cls, value: str) -> ValueWithIsValid:
-        if isinstance(date_from := date_str_to_datetime(value), datetime):
-            if (datetime.now() - date_from).total_seconds() >= 0:
-                return ValueWithIsValid(value=date_from, is_valid=True)
-            return ValueWithIsValid(value=date_from, is_valid=False)
+    def v_date_from(cls, value: str) -> DateWithIsValid:
+        dates = tuple(map(date_str_to_datetime, value.split(' - ')))
+        if len(dates) == 1:
+            return DateWithIsValid(
+                date_start=dates[0],
+                date_end=None,
+                is_valid=dates[0] is not None and (datetime.now() - dates[0]).total_seconds() >= 0)
+        elif len(dates) == 2:
+            return DateWithIsValid(
+                date_start=dates[0],
+                date_end=dates[1],
+                is_valid=all((dates[0] is not None and (datetime.now() - dates[0]).total_seconds() >= 0,
+                              dates[1] is not None and (datetime.now() - dates[1]).total_seconds() >= 0)))
+        else:
+            return DateWithIsValid(date_start=None, date_end=None, is_valid=False)
+
+    @field_validator('date_to', mode='before')
+    def v_date_to(cls, value: str) -> DateWithIsValid:
+        dates = tuple(map(date_str_to_datetime, value.split(' - ')))
+        if len(dates) == 1:
+            return DateWithIsValid(
+                date_start=dates[0],
+                date_end=None,
+                is_valid=True)
+        elif len(dates) == 2:
+            return DateWithIsValid(
+                date_start=dates[0],
+                date_end=dates[1],
+                is_valid=True)
+        else:
+            return DateWithIsValid(date_start=None, date_end=None, is_valid=False)
 
     @field_validator('vet_examination', mode='before')
     def v_vet_examination(cls, value: str, info: ValidationInfo) -> ValueWithIsValid:
@@ -84,10 +123,6 @@ class MilkProductInRequestSchema(ProductInRequestSchema):
             if product_name.lower() in value.lower():
                 return ValueWithIsValid(value=value, is_valid=True)
         return ValueWithIsValid(value=value, is_valid=False)
-
-    @field_validator('date_to', mode='before')
-    def is_datetime(cls, value: str) -> datetime:
-        return date_str_to_datetime(value)
 
     @field_validator('volume', mode='before')
     def is_digit(cls, value: str) -> float:
