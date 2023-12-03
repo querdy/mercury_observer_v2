@@ -16,8 +16,10 @@ class Mercury(BaseSession):
     def __init__(self, user_id: int, db: Database, service_url: URL = settings.BASE_MERCURY_URL):
         super().__init__(service_url=service_url, user_id=user_id, db=db)
 
-    async def login(self, login: str, password: str) -> bool:
-        if not await self._check_cookie():
+    async def login(self, login: str, password: str, new_auth: bool = False) -> bool:
+        if not await self._check_cookie() or new_auth:
+            if new_auth:
+                self._cs.cookie_jar.clear()
             return await self._auth(login=login, password=password)
         return False
 

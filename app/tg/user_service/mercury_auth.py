@@ -1,4 +1,5 @@
 from aiogram import Router, F, Bot
+from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
@@ -13,10 +14,16 @@ router = Router()
 
 
 @router.callback_query(EditMercuryAuthDataCallback.filter(F.action.lower() == "edit"))
-async def set_mercury_login_handler(callback: CallbackQuery, state: FSMContext):
+async def set_mercury_login_callback_handler(callback: CallbackQuery, state: FSMContext):
     await state.set_state(MercuryAuthDataState.login)
     await callback.message.edit_reply_markup(reply_markup=None)
     await callback.message.answer('Введите логин:')
+
+
+@router.message(Command('mercury_auth'))
+async def set_mercury_login_command_handler(message: Message, state: FSMContext):
+    await state.set_state(MercuryAuthDataState.login)
+    await message.answer('Введите логин:')
 
 
 @router.message(MercuryAuthDataState.login)
@@ -35,7 +42,7 @@ async def check_and_save_mercury_auth_data_handler(message: Message, state: FSMC
         db=db,
         user_id=message.from_user.id
     )
-    if await mercury.login(state_data.get('login'), state_data.get('password')):
+    if await mercury.login(state_data.get('login'), state_data.get('password'), new_auth=True):
         await db.mercury_auth.update_login_and_password(
             UpdateLoginAndPasswordSchema(
                 user_id=message.from_user.id,
