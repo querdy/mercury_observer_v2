@@ -5,8 +5,6 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from loguru import logger
 
-from app.settings import settings
-
 
 class SchedulerRepo:
     def __init__(self):
@@ -27,13 +25,11 @@ class SchedulerRepo:
                 trigger=CronTrigger(
                     hour=f"{hour_start}-{hour_end}" if hour_start < hour_end else f"{hour_start}-23, 0-{hour_end}",
                     minute=f"{minute_start}-{minute_end}/{every_minute}",
-                    # minute=f"{minute_start}-{minute_end}",
-                    # second=f"*/{every_minute}",
                     day_of_week=','.join(str(day) for day in days_of_week),
                 ),
                 name=str(user_id)
             )
-            logger.info(f"{user_id} create job. func: {function.__name__}, params: {params}")
+            logger.info(f"{user_id} create job. func: {function.__name__}")
             return True
         except ValueError:
             logger.warning(f"{user_id} NOT create job. Params: {params}")
