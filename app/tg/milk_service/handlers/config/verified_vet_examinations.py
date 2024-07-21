@@ -3,7 +3,7 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery
 
 from app.databases.mongo import Database
-from app.schemas.milk_service import MilkPushSchema, MilkPullSchema, VetExamination
+from app.schemas.base import PushSchema, PullSchema, VetExamination
 from app.settings import saved_msg
 from app.tg.milk_service.callback import MilkEditConfigCallback, MilkEditVerifiedVetExaminationCallback
 from app.tg.milk_service.keyboard import edit_verified_vet_examination_kb
@@ -26,7 +26,7 @@ async def edit_verified_vet_examination_handler(callback: CallbackQuery, db: Dat
 async def add_verified_transaction_type_handler(callback: CallbackQuery, db: Database):
     config = await db.milk_service_config.push(
         field="verified_vet_examinations",
-        data=MilkPushSchema(
+        data=PushSchema(
             user_id=callback.from_user.id,
             items=[VetExamination[f"{MilkEditVerifiedVetExaminationCallback.unpack(callback.data).value}"].value]
         )
@@ -44,7 +44,7 @@ async def add_verified_transaction_type_handler(callback: CallbackQuery, db: Dat
 async def delete_verified_transaction_type_handler(callback: CallbackQuery, db: Database):
     config = await db.milk_service_config.pull(
         field="verified_vet_examinations",
-        data=MilkPullSchema(
+        data=PullSchema(
             user_id=callback.from_user.id,
             item=VetExamination[f"{MilkEditVerifiedVetExaminationCallback.unpack(callback.data).value}"].value
         )

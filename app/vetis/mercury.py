@@ -108,7 +108,7 @@ class Mercury(BaseSession):
             url=self.request_url,
             data={
                 "_action": "chooseServicedEnterprise",
-                "enterprisePk": enterprise_pk
+                "commonEnterpriseNumber": enterprise_pk
             }
         )
 
@@ -229,6 +229,19 @@ class Mercury(BaseSession):
             tuid=accepted_request_page.find("input", {"name": "tuid"}).get("value"),
             waybill_id=accepted_request_page.find("input", {"name": "waybillId"}).get("value"),
         )
+
+    async def reject_request(self, request: RequestSchema, message: str) -> bool:
+        if not message.strip():
+            message = "некорректные данные"
+        response = await self.fetch(
+            url=self.request_url,
+            data={'_action': 'rejectTransaction',
+                  'transactionPk': request.number,
+                  'version': request.version,
+                  'cause': message,
+                  }
+        )
+        return response.status == 200
 
     async def confirm_transaction(self, transaction: TransactionAfterRequestSchema) -> bool:
         response = await self.fetch(

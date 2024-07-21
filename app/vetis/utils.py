@@ -27,5 +27,3 @@ def date_str_to_datetime(date: str) -> datetime | None:
             return datetime.strptime(date, dateformat)
         except ValueError:
             continue
-
-

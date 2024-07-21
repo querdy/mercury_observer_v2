@@ -3,8 +3,7 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from app.schemas.milk_service import ScheduleEveryMinute, TransactionType, VetExamination, DayOfWeek
 from app.tg.milk_service.callback import MilkMainCallback, MilkEditScheduleEveryMinuteCallback, \
     MilkEditVerifiedTransactionTypeCallback, MilkEditEnterprisePatternsCallback, MilkEditVerifiedProductsCallback, \
-    MilkEditConfigCallback, EditMercuryAuthDataCallback, MilkEditVerifiedVetExaminationCallback, \
-    MilkEditDaysOfWeekCallback
+    MilkEditConfigCallback, MilkEditVerifiedVetExaminationCallback, MilkEditDaysOfWeekCallback
 
 
 def edit_schedule_every_minute_kb():
@@ -249,13 +248,3 @@ def main_kb(is_schedule: bool):
     )
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
-
-def not_mercury_auth_data_kb():
-    return InlineKeyboardMarkup(inline_keyboard=[
-        [
-            InlineKeyboardButton(
-                text=f"Ввести данные",
-                callback_data=EditMercuryAuthDataCallback(action="edit").pack()
-            ),
-        ],
-    ])

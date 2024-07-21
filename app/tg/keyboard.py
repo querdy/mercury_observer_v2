@@ -1,9 +1,6 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 
-from app.schemas.milk_service import ScheduleEveryMinute, TransactionType
-from app.tg.milk_service.callback import EditMercuryAuthDataCallback, MilkMainCallback, MilkEditConfigCallback, \
-    MilkEditEnterprisePatternsCallback, MilkEditScheduleEveryMinuteCallback, MilkEditVerifiedProductsCallback, \
-    MilkEditVerifiedTransactionTypeCallback
+from app.tg.user_service.callback import EditMercuryAuthDataCallback
 
 
 class ReplyKeyboard:
@@ -18,3 +15,14 @@ class ReplyKeyboard:
                 ],
             ],
         )
+
+
+def not_mercury_auth_data_kb():
+    return InlineKeyboardMarkup(inline_keyboard=[
+        [
+            InlineKeyboardButton(
+                text=f"Ввести данные",
+                callback_data=EditMercuryAuthDataCallback(action="edit").pack()
+            ),
+        ],
+    ])

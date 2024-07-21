@@ -3,7 +3,7 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery
 
 from app.databases.mongo import Database
-from app.schemas.milk_service import MilkPushSchema, MilkPullSchema
+from app.schemas.base import PushSchema, PullSchema
 from app.settings import saved_msg
 from app.tg.milk_service.callback import MilkEditConfigCallback, MilkEditDaysOfWeekCallback
 from app.tg.milk_service.keyboard import edit_days_of_week_kb
@@ -26,7 +26,7 @@ async def edit_verified_transaction_type_handler(callback: CallbackQuery, db: Da
 async def add_verified_transaction_type_handler(callback: CallbackQuery, db: Database):
     config = await db.milk_service_config.push(
         field="days_of_week",
-        data=MilkPushSchema(
+        data=PushSchema(
             user_id=callback.from_user.id,
             items=[int(MilkEditDaysOfWeekCallback.unpack(callback.data).value)]
         )
@@ -44,7 +44,7 @@ async def add_verified_transaction_type_handler(callback: CallbackQuery, db: Dat
 async def delete_verified_transaction_type_handler(callback: CallbackQuery, db: Database):
     config = await db.milk_service_config.pull(
         field="days_of_week",
-        data=MilkPullSchema(
+        data=PullSchema(
             user_id=callback.from_user.id,
             item=int(MilkEditDaysOfWeekCallback.unpack(callback.data).value)
         )

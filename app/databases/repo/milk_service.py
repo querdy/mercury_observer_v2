@@ -2,7 +2,8 @@ from motor.motor_asyncio import AsyncIOMotorDatabase, AsyncIOMotorCollection
 from pymongo import ReturnDocument
 from pymongo.results import InsertOneResult
 
-from app.schemas.milk_service import MilkConfigSchema, MilkPushSchema, MilkPullSchema, MilkReverseBooleanSchema
+from app.schemas.base import PushSchema, PullSchema, ReverseBooleanSchema
+from app.schemas.milk_service import MilkConfigSchema
 
 
 class MilkServiceConfigRepo:
@@ -19,7 +20,8 @@ class MilkServiceConfigRepo:
 
     async def create(self, data: MilkConfigSchema) -> MilkConfigSchema:
         created_config: InsertOneResult = await self.collection.insert_one(data.model_dump())
-        db_config: MilkConfigSchema = await self.get_by_user_id(user_id=created_config.inserted_id)
+        db_config: MilkConfigSchema = MilkConfigSchema(**(await self.collection.find_one(
+            {"_id": created_config.inserted_id})))
         return db_config
 
     async def get_or_create(self, data: MilkConfigSchema) -> MilkConfigSchema:
@@ -36,7 +38,7 @@ class MilkServiceConfigRepo:
         )
         return MilkConfigSchema(**db_config)
 
-    async def reverse_boolean_field(self, data: MilkReverseBooleanSchema):
+    async def reverse_boolean_field(self, data: ReverseBooleanSchema):
         db_config = await self.collection.find_one_and_update(
             {"user_id": data.user_id},
             [
@@ -46,7 +48,7 @@ class MilkServiceConfigRepo:
         )
         return MilkConfigSchema(**db_config)
 
-    async def push(self, field: str, data: MilkPushSchema) -> MilkConfigSchema:
+    async def push(self, field: str, data: PushSchema) -> MilkConfigSchema:
         db_config = await self.collection.find_one_and_update(
             {"user_id": data.user_id},
             {"$push": {field: {"$each": data.items}}},
@@ -54,7 +56,7 @@ class MilkServiceConfigRepo:
         )
         return MilkConfigSchema(**db_config)
 
-    async def pull(self, field: str, data: MilkPullSchema) -> MilkConfigSchema:
+    async def pull(self, field: str, data: PullSchema) -> MilkConfigSchema:
         db_config = await self.collection.find_one_and_update(
             {"user_id": data.user_id},
             {"$pull": {field:  data.item}},

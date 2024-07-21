@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from app.databases.mongo import Database
-from app.schemas.milk_service import MilkPushSchema, MilkPullSchema
+from app.schemas.base import PushSchema, PullSchema
 from app.settings import saved_msg
 from app.tg.milk_service.callback import MilkEditEnterprisePatternsCallback, MilkEditConfigCallback
 from app.tg.milk_service.keyboard import edit_enterprise_patterns_kb
@@ -27,7 +27,7 @@ async def edit_enterprise_patterns_handler(callback: CallbackQuery, state: FSMCo
 async def delete_enterprise_pattern_handler(callback: CallbackQuery, db: Database):
     config = await db.milk_service_config.pull(
         field="enterprise_patterns",
-        data=MilkPullSchema(
+        data=PullSchema(
             user_id=callback.from_user.id,
             item=MilkEditEnterprisePatternsCallback.unpack(callback.data).value
         )
@@ -62,7 +62,7 @@ async def get_new_enterprise_pattern_handler(message: Message, db: Database, bot
     else:
         config = await db.milk_service_config.push(
             field="enterprise_patterns",
-            data=MilkPushSchema(
+            data=PushSchema(
                 user_id=message.from_user.id,
                 items=[message.text]
             )

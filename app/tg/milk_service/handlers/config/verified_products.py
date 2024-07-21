@@ -4,7 +4,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, Message
 
 from app.databases.mongo import Database
-from app.schemas.milk_service import MilkPushSchema, MilkPullSchema
+from app.schemas.base import PushSchema, PullSchema
 from app.settings import saved_msg
 from app.tg.milk_service.callback import MilkEditConfigCallback, MilkEditVerifiedProductsCallback
 from app.tg.milk_service.keyboard import edit_verified_products_kb
@@ -27,7 +27,7 @@ async def edit_verified_products_handler(callback: CallbackQuery, state: FSMCont
 async def delete_verified_product_handler(callback: CallbackQuery, db: Database):
     config = await db.milk_service_config.pull(
         field="verified_products",
-        data=MilkPullSchema(
+        data=PullSchema(
             user_id=callback.from_user.id,
             item=MilkEditVerifiedProductsCallback.unpack(callback.data).value
         )
@@ -54,7 +54,7 @@ async def add_verified_products_handler(callback: CallbackQuery, state: FSMConte
 async def get_new_verified_product_handler(message: Message, db: Database, bot: Bot):
     config = await db.milk_service_config.push(
         field="verified_products",
-        data=MilkPushSchema(
+        data=PushSchema(
             user_id=message.from_user.id,
             items=[message.text]
         )

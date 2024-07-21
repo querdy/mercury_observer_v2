@@ -10,7 +10,7 @@ from yarl import URL
 
 
 saved_msg: dict[int, dict[str, int]] = {}
-# checked_invalid_requests: set[str] = set()
+messages_for_delete: list[dict[str, int]] = list()
 
 BASE_DIR: pathlib.PurePath = pathlib.Path(__file__).resolve().parent.parent
 

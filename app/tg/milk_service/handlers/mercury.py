@@ -9,12 +9,14 @@ from app.schemas.user import UserSchema
 from app.settings import saved_msg
 from app.tg.milk_service.callback import MilkMainCallback
 from app.tg.milk_service.keyboard import main_kb
-from app.tg.milk_service.utils import get_observer_answer
+from app.tg.milk_service.utils import get_observer_answer, SizedList
 from app.tg.scheduler import SchedulerRepo
 from app.vetis.mercury import Mercury
 from app.vetis.schemas.milk import MilkRequestSchema, config_context
 
 router = Router()
+
+checked_transactions = SizedList(10)
 
 
 async def run_observer(db: Database, callback: CallbackQuery, user: UserSchema, config: MilkConfigSchema):
@@ -38,8 +40,22 @@ async def run_observer(db: Database, callback: CallbackQuery, user: UserSchema, 
             if request.is_valid():
                 transaction = await mercury.accept_request(request=request)
                 request.confirmed = await mercury.confirm_transaction(transaction=transaction)
-        for msg in get_observer_answer(enterprise=enterprise, requests=requests):
-            await callback.message.answer(msg)
+        requests_for_msg = []
+        for request in requests:
+            try:
+                checked_transactions.index(request.number)
+            except ValueError:
+                requests_for_msg.append(request)
+                checked_transactions.append(request.number)
+        if len(requests_for_msg) > 0:
+            for msg in get_observer_answer(enterprise=enterprise, requests=requests_for_msg):
+                await callback.message.answer(msg)
+        else:
+            try:
+                await callback.answer()
+            except TelegramBadRequest:
+                pass
+        logger.debug(f"Заявок: {len(requests)}, заявок в сообщении: {len(requests_for_msg)}")
 
 
 @router.callback_query(MilkMainCallback.filter(F.action == 'single'))
@@ -57,12 +73,13 @@ async def start_loop_parse_handler(callback: CallbackQuery, db: Database, schedu
     if scheduler.create_job(run_observer, {'db': db, 'callback': callback, 'user': user, 'config': config},
                             every_minute=config.schedule_every_minute, user_id=callback.from_user.id,
                             hour_start=config.start_hour, hour_end=config.end_hour, minute_start=config.start_minute,
-                            minute_end=config.end_minute, days_of_week=config.days_of_week):
+                            minute_end=config.end_minute, days_of_week=config.days_of_week, service_name="milk"):
         try:
             await bot.edit_message_reply_markup(
                 chat_id=saved_msg[callback.from_user.id]['chat_id'],
                 message_id=saved_msg[callback.from_user.id]['msg_id'],
-                reply_markup=main_kb(is_schedule=bool(scheduler.get_user_jobs(callback.from_user.id)))
+                reply_markup=main_kb(is_schedule=bool(
+                    scheduler.get_user_jobs(callback.from_user.id, service_name="milk")))
             )
         except TelegramBadRequest:
             pass
@@ -73,12 +90,12 @@ async def start_loop_parse_handler(callback: CallbackQuery, db: Database, schedu
 
 @router.callback_query(MilkMainCallback.filter(F.action == 'stop_loop'))
 async def stop_loop_parse_handler(callback: CallbackQuery, scheduler: SchedulerRepo, bot: Bot):
-    scheduler.remove_user_jobs(user_id=callback.from_user.id)
+    scheduler.remove_user_jobs(user_id=callback.from_user.id, service_name="milk")
     try:
         await bot.edit_message_reply_markup(
             chat_id=saved_msg[callback.from_user.id]['chat_id'],
             message_id=saved_msg[callback.from_user.id]['msg_id'],
-            reply_markup=main_kb(is_schedule=bool(scheduler.get_user_jobs(callback.from_user.id)))
+            reply_markup=main_kb(is_schedule=bool(scheduler.get_user_jobs(callback.from_user.id, service_name="milk")))
         )
     except TelegramBadRequest:
         pass

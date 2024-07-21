@@ -5,9 +5,9 @@ from aiogram.types import CallbackQuery, Message
 
 from app.databases.mongo import Database
 from app.schemas.mercury_auth import UpdateLoginAndPasswordSchema
-from app.tg.milk_service.callback import EditMercuryAuthDataCallback
-from app.tg.milk_service.keyboard import not_mercury_auth_data_kb
+from app.tg.keyboard import not_mercury_auth_data_kb
 from app.tg.states import MercuryAuthDataState
+from app.tg.user_service.callback import EditMercuryAuthDataCallback
 from app.vetis.mercury import Mercury
 
 router = Router()

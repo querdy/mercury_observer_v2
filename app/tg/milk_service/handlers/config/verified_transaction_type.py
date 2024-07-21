@@ -3,7 +3,7 @@ from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import CallbackQuery
 
 from app.databases.mongo import Database
-from app.schemas.milk_service import MilkPullSchema, MilkPushSchema
+from app.schemas.base import PullSchema, PushSchema
 from app.settings import saved_msg
 from app.tg.milk_service.callback import MilkEditConfigCallback, MilkEditVerifiedTransactionTypeCallback
 from app.tg.milk_service.keyboard import edit_verified_transaction_type_kb
@@ -26,7 +26,7 @@ async def edit_verified_transaction_type_handler(callback: CallbackQuery, db: Da
 async def add_verified_transaction_type_handler(callback: CallbackQuery, db: Database):
     config = await db.milk_service_config.push(
         field="verified_transaction_types",
-        data=MilkPushSchema(
+        data=PushSchema(
             user_id=callback.from_user.id,
             items=[MilkEditVerifiedTransactionTypeCallback.unpack(callback.data).value]
         )
@@ -44,7 +44,7 @@ async def add_verified_transaction_type_handler(callback: CallbackQuery, db: Dat
 async def delete_verified_transaction_type_handler(callback: CallbackQuery, db: Database):
     config = await db.milk_service_config.pull(
         field="verified_transaction_types",
-        data=MilkPullSchema(
+        data=PullSchema(
             user_id=callback.from_user.id,
             item=MilkEditVerifiedTransactionTypeCallback.unpack(callback.data).value
         )

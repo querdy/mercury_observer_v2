@@ -1,6 +1,7 @@
 import asyncio
 import sys
 
+import aiogram.methods
 from aiogram import Bot, Dispatcher
 from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
@@ -22,11 +23,16 @@ async def main():
     dispatcher.update.middleware(UserMiddleware())
     dispatcher.include_router(base_router)
     dispatcher.startup.register(startup)
+    dispatcher.shutdown.register(shutdown)
     await dispatcher.start_polling(bot)
 
 
 async def startup():
     logger.info('Bot is running!')
+
+
+async def shutdown():
+    pass
 
 if __name__ == '__main__':
     logger.remove()

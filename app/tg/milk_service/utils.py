@@ -1,9 +1,21 @@
 from datetime import datetime
 
+from loguru import logger
+
 from app.schemas.milk_service import MilkConfigSchema, DayOfWeek
 from app.settings import settings
 from app.vetis.schemas.base import EnterpriseMainPageSchema
 from app.vetis.schemas.milk import MilkRequestSchema, ValueWithIsValid, DateWithIsValid
+
+
+class SizedList(list):
+    def __init__(self, maxlength):
+        super().__init__()
+        self._maxlength = maxlength
+
+    def append(self, element):
+        self.__delitem__(slice(0, len(self) == self._maxlength))
+        super(SizedList, self).append(element)
 
 
 def get_config_answer(config: MilkConfigSchema) -> str:

@@ -10,8 +10,7 @@ from pydantic_core.core_schema import ValidationInfo
 
 from app.schemas.milk_service import TransactionType, VetExamination, MilkConfigSchema
 from app.settings import settings
-from app.vetis.schemas.base import RequestSchema, RecipientInRequestSchema, ProductInRequestSchema, \
-    TransactionAfterRequestSchema
+from app.vetis.schemas.base import RequestSchema, RecipientInRequestSchema, ProductInRequestSchema
 from app.vetis.utils import date_str_to_datetime
 
 _init_context_var = ContextVar('_init_context_var', default=None)
